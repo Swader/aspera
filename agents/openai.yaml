@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aspera"
+  short_description: "Top models challenge and improve each other"
+  default_prompt: "Use $aspera to challenge this artifact and verify the feedback."
+policy:
+  allow_implicit_invocation: false

@@ -1,52 +1,58 @@
 ---
 name: aspera
-description: Sends the latest artifact from the current chat (a plan file, an answer, a PR or diff) to Astra (Codex CLI, gpt-6-astra at xhigh effort) for an adversarial review, judged for simple code, full functionality, low tech debt and proven at-scale practice (caching, parallelism, non-blocking queues, 10x opportunities). Then reports the findings. Use when the user invokes /aspera or asks for an Astra review.
+description: Have top models from different harnesses challenge and improve a code change, plan, opinion or review. Codex consults Claude Opus 5.5; Claude and Cursor consult GPT-6 Astra. The manager verifies each finding, incorporates valid feedback within the authorized scope, and discusses contested points. Use when the user invokes /aspera or $aspera, or explicitly asks for this cross-model review.
 disable-model-invocation: true
 ---
 
-# Aspera: Astra adversarial review
+# Aspera: top models work together
 
-Skill dir: `~/.cursor/skills/aspera`. Put the files you write (`target.md`, `brief.md`) in an input dir, `~/.cursor/aspera/input-<YYYYmmdd-HHMMSS>/`. The script makes its own run dir for `review.md` and `codex.log`.
+You remain the owner. The other model is a peer who challenges your reasoning. Verify its claims against evidence; accept valid findings and explain rejected ones. The aim is a better result, not agreement or a second opinion pasted back to the user.
 
-## 1. Pick the target
+Use the folder containing this SKILL.md as `<skill dir>`. All harness installations should link to one checkout. Do not maintain separate host-specific instructions.
 
-In this order:
-1. An explicit argument after `/aspera` (file path, PR URL, pasted text). Write pasted text to `<input dir>/target.md`.
-2. The file most recently created or edited in this chat (for example a plan `.md`).
-3. Otherwise, write the last substantive assistant answer to `<input dir>/target.md`.
+## 1. Define the review
 
-For a PR or diff, write the diff (`gh pr diff`, `git diff`) and the PR link to `<input dir>/target.md`.
+Choose the explicit artifact first: code, diff, PR, plan, opinion or review. Otherwise use the latest substantive artifact in this chat. For text or a PR, save a local text snapshot. Include the exact revision and changed diff when reviewing code.
 
-## 2. Write the brief
+Write `target.md` and `brief.md` under `~/.cursor/aspera/inputs/<unique run>/`, or a task scratch folder. The brief states the goal, acceptance checks, scope, verified source paths/revisions, decisions, open questions and existing review evidence. Do not copy the full chat or secret values. Distinguish claims from verified results.
 
-`<input dir>/brief.md`, a few lines only:
-- What the target is.
-- The user's goal in this chat (1-3 sentences).
-- Repos involved: absolute local checkout path, and the branch and commit you read them at (`git rev-parse HEAD`).
-- Links to PRs and issues mentioned.
+Reuse a current independent review that covers the same artifact, revision and risks. Review only changed or uncovered work. A missing, failed or incomplete review does not pass.
 
-Never include secret values. Do not paste the whole chat.
+## 2. Select the peer and launch
 
-## 3. Run in the background
+| Invoking harness | Peer | Route |
+| --- | --- | --- |
+| Codex, including Desktop | Claude Opus 5.5 (`claude-opus-5-5`) | Claude CLI |
+| Claude Code | GPT-6 Astra (`gpt-6-astra`) | Codex CLI |
+| Cursor | GPT-6 Astra (`gpt-6-astra`) | Codex CLI |
 
-Shell tool with `block_until_ms: 0`, from the target's repo root:
+Use these top-model defaults at `xhigh` effort. Do not downgrade to Sol or Luna for this skill. Preserve an explicit user model choice. If a named model or CLI is unavailable, report the exact blocker; do not silently substitute. An Aspera invocation authorizes this cross-model review, not unrelated tasks or recursive reviewers.
 
 ```bash
-bash "$HOME/.cursor/skills/aspera/scripts/aspera.sh" \
-  --target "<file>" --brief "<input dir>/brief.md" [--cd "<repo root>"]
+bash "<skill dir>/scripts/aspera.sh" --from <codex|claude|cursor> \
+  --target "<target file>" --brief "<brief file>" --cd "<source root>"
 ```
 
-`--cd` defaults to the git toplevel of the target's directory. Overrides: `ASPERA_MODEL` (default `gpt-6-astra`), `ASPERA_EFFORT` (default `xhigh`), `ASPERA_OUT_DIR` (default `~/.cursor/aspera`).
+Always supply the actual invoking harness. Old callers outside Codex retain the Cursor default. If `CODEX_THREAD_ID` is set, an omitted `--from` fails rather than routing to the wrong peer. Overrides are `ASPERA_MODEL` (full canonical model ID), `ASPERA_EFFORT` and `ASPERA_OUT_DIR`. State which model is reviewing. Do not leave an old model override in place if it conflicts with this request.
 
-Tell the user in one sentence that Astra is reviewing and that an xhigh review can take 10-40 minutes.
+The reviewer is read-only. Claude gets Read, Glob and Grep inside the working directory and the target/brief directories. Codex uses its read-only sandbox. Put needed diff/source evidence in the packet if those tools cannot reach it. Report access limits; do not broaden permissions to hide them. Claude's JSON receipt must identify the requested model and contain a successful, nonempty review.
 
-## 4. Wait without polling
+## 3. Wait on the owner
 
-Use the native AwaitShell tool with `pattern: "ASPERA_(DONE|FAILED)"` and a long block time. If it times out, await again. Do not read the log in a loop.
+Before waiting, record the completion condition, owner process/run, next action, wake mechanism and deadline. Use the host's supported background completion wait: Cursor AwaitShell, Claude's task completion, or Codex's command-session completion. Keep one owner and one waiter. Do not add log-reading or sleep loops. On a bounded timeout, retain the owner. If no event wake exists, state the next manual check; do not claim ongoing monitoring.
+
+Exit 75 identifies an existing owner and run. Reuse it. Remove a stale lock only after proving that owner and its reviewer process have stopped. A lock is not a review receipt.
+
+## 4. Verify, reconcile and discuss
+
+On `ASPERA_DONE <path>`, read the full review. Check each actionable claim against the artifact, code and meaningful tests. Record **accepted**, **rejected with evidence**, or **unresolved**. Preserve the reviewer's original report; keep your disposition separate.
+
+Incorporate accepted findings into the work already authorized. A review-only request authorizes an assessment and proposed corrections, not source edits or external writes. Do not ask for permission again when implementation is already authorized.
+
+For a disputed material finding or a substantive correction, send a focused reply to the same peer model. The next brief includes the prior review, your evidence and reasoning, accepted/rejected findings, and the revised artifact or exact diff. Run the launcher again with that packet. This is a continued discussion even though each CLI call is isolated. Ask the peer to check the rebuttal and changed scope. Verify its answer in turn. Do not recursively invoke Aspera from the reviewer or run duplicate broad reviews.
+
+Normally use one independent pass and one focused response. Stop when the required checks pass and no supported blocker remains. If two exchanges make no progress, report the unresolved point and evidence instead of looping or accepting a claim by authority. Agreement alone is not proof.
 
 ## 5. Report
 
-- On `ASPERA_DONE <path>`: read `review.md`. Present Astra's findings result first, in plain, short language. Keep Astra's severity and order. Mark which findings you spot-checked against code.
-- Do not apply changes unless the user asks. A review authorizes an assessment, not an implementation.
-- On `ASPERA_FAILED exit=<code> log=<path>`: show the exit code and the last log lines, and name the cause (for example: codex not on PATH, auth failure, unknown model, missing target).
-- Give the `review.md` path. Codex keeps the session, so the user can continue it with `codex resume`.
+Give the outcome, valid findings and their disposition, meaningful disagreements, checks, limits, and review path. Name the actual peer model. On `ASPERA_FAILED`, report the exit code and a redacted cause from the local log/result. Never paste raw logs that could contain secrets. CLI success means a report arrived; the manager still decides whether the task passes.

@@ -1,9 +1,11 @@
 # Aspera
 
-Aspera makes top models work together. Your agent sends code, a plan, an opinion or a review to a peer in another harness, verifies the response, incorporates valid findings within scope, and discusses disputed points with evidence.
+Aspera makes top models work together. Your agent sends code, a plan, an opinion or a review to a peer from another model family, verifies the response, incorporates valid findings within scope, and discusses disputed points with evidence.
 
 | Manager's harness | Review peer |
 | --- | --- |
+| Testy McTestface · Astra or Sol | Claude Opus 5.5 through a native Testy child chat |
+| Testy McTestface · Opus | GPT-6 Astra through a native Testy child chat |
 | Codex | Claude Opus 5.5 (`claude-opus-5-5`) through Claude CLI |
 | Claude Code or Cursor | GPT-6 Astra (`gpt-6-astra`) through Codex CLI |
 
@@ -11,7 +13,9 @@ Both default to `xhigh`. There is no silent downgrade. The manager remains accou
 
 ## Install once, link each harness
 
-Requirements: Bash, Git, Python 3, and the peer CLI installed and authenticated with access to the selected model.
+In Testy, use its native `testy_*` tools and an available peer model profile. Testy takes precedence over the model's underlying harness. The review stays in a visible child chat; follow-ups reuse that chat. Review-only instructions are task constraints, not a sandbox.
+
+For CLI routes, requirements are Bash, Git, Python 3, and the peer CLI installed and authenticated with access to the selected model.
 
 For a fresh installation:
 
@@ -24,9 +28,9 @@ ln -s "$HOME/.cursor/skills/aspera" "$HOME/.agents/skills/aspera"
 
 If a destination exists, compare it and save its changes before replacing it with a symlink. Do not create a second Codex copy in another discovery directory. Codex discovers global skills in `~/.agents/skills`; Cursor and Claude use their own skills directories. All links above resolve to the same Git checkout. The skill uses paths relative to its own directory and also works when that checkout lives elsewhere.
 
-Invoke `/aspera` in Cursor or Claude, or `$aspera` in Codex. See [SKILL.md](SKILL.md) for the shared review and discussion workflow.
+Invoke `/aspera` in Testy, Cursor or Claude, or `$aspera` in Codex. See [SKILL.md](SKILL.md) for the shared review and discussion workflow.
 
-## Runner
+## CLI runner (outside Testy)
 
 ```bash
 bash /path/to/aspera/scripts/aspera.sh --from codex \

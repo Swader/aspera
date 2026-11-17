@@ -30,7 +30,7 @@ Detect Testy McTestface first from the supplied environment and available `testy
 | Claude Code | GPT-6 Astra (`gpt-6-astra`) | Codex CLI |
 | Cursor | GPT-6 Astra (`gpt-6-astra`) | Codex CLI |
 
-Use these top-model defaults at `xhigh` effort. Do not downgrade to Sol or Luna for this skill. Preserve an explicit user model choice. If a named model or CLI is unavailable, report the exact blocker; do not silently substitute. An Aspera invocation authorizes this cross-model review, not unrelated tasks or recursive reviewers.
+Use these top-model defaults at `xhigh` effort. Do not downgrade to Sol or Luna for this skill. Preserve an explicit user model choice. If a named model or CLI is unavailable, use the nearest available top model from the other family, say which one reviewed, and continue. Report a blocker only when no model of the other family is available. An Aspera invocation authorizes this cross-model review, not unrelated tasks or recursive reviewers.
 
 ### In Testy McTestface
 
@@ -41,7 +41,7 @@ Use these top-model defaults at `xhigh` effort. Do not downgrade to Sol or Luna 
 5. Retain the returned child ID. Use `testy_wake_on_thread` with a deadline, then end the turn. On wake, read the complete result with `testy_read_thread` and verify its model/profile and coverage. A failed, stopped, empty or incomplete reply is not a completed review.
 6. Send focused follow-ups to the same child with `testy_send_prompt`. Wait for its next reply in the same way. Do not launch a replacement peer for a rebuttal.
 
-If native tools or the required peer profile are unavailable, report the exact blocker. Do not silently use a CLI instead. An existing review child for the same revision remains the owner; reuse it.
+If the required peer profile is missing from `testy_list_models`, pick the nearest available profile from the other family and say which. If the native tools are unavailable, use the CLI route and say so. Reuse an existing review child for the same revision.
 
 ### Outside Testy: CLI route
 
@@ -56,7 +56,7 @@ The reviewer is read-only. Claude gets Read, Glob and Grep inside the working di
 
 ## 3. Wait on the owner
 
-Before waiting, record the completion condition, owner process/run, next action, wake mechanism and deadline. Use the host's supported background completion wait: Testy's `testy_wake_on_thread`, Cursor AwaitShell, Claude's task completion, or Codex's command-session completion. Keep one owner and one waiter. Do not add log-reading or sleep loops. On a bounded timeout, retain the owner. If no event wake exists, state the next manual check; do not claim ongoing monitoring.
+Wait with the host's supported completion wake and a deadline: Testy's `testy_wake_on_thread`, Cursor AwaitShell, Claude's task completion, or Codex's command-session completion. Do not add log-reading or sleep loops, and write no files about waiting. On a timeout, check the same reviewer once before replacing it. If no event wake exists, state the next manual check; do not claim ongoing monitoring.
 
 Exit 75 identifies an existing owner and run. Reuse it. Remove a stale lock only after proving that owner and its reviewer process have stopped. A lock is not a review receipt.
 

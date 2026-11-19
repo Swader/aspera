@@ -1,6 +1,6 @@
 ---
 name: aspera
-description: Have top models challenge and improve a code change, plan, opinion or review. In Testy McTestface, use an opposite-family child chat (Astra/Sol to Opus 5.5; Opus to Astra). Outside Testy, Codex consults Claude Opus 5.5; Claude and Cursor consult GPT-6 Astra. The manager verifies each finding, incorporates valid feedback within the authorized scope, and discusses contested points. Use when the user invokes /aspera or $aspera, or explicitly asks for this cross-model review.
+description: Have top models challenge and improve a code change, plan, opinion or review. In Testy McTestface, use an opposite-family child chat (Astra/Sol or Gemini to Opus 5.5; Opus to Astra). Outside Testy, Codex consults Claude Opus 5.5; Claude and Cursor consult GPT-6 Astra. The manager verifies each finding, incorporates valid feedback within the authorized scope, and discusses contested points. Use when the user invokes /aspera or $aspera, or explicitly asks for this cross-model review.
 disable-model-invocation: true
 ---
 
@@ -25,6 +25,7 @@ Detect Testy McTestface first from the supplied environment and available `testy
 | Invoking harness | Peer | Route |
 | --- | --- | --- |
 | Testy · Astra or Sol (Codex/OpenAI family) | Claude Opus 5.5 (`claude-opus-5-5`) | Testy child chat |
+| Testy · Gemini (API key or Antigravity) | Claude Opus 5.5 (`claude-opus-5-5`) | Testy child chat |
 | Testy · Opus (Claude family) | GPT-6 Astra (`gpt-6-astra`) | Testy child chat |
 | Codex, including Desktop | Claude Opus 5.5 (`claude-opus-5-5`) | Claude CLI |
 | Claude Code | GPT-6 Astra (`gpt-6-astra`) | Codex CLI |
@@ -34,7 +35,7 @@ Use these top-model defaults at `xhigh` effort. Do not downgrade to Sol or Luna 
 
 ### In Testy McTestface
 
-1. Identify the manager's actual model family from the current chat, not the underlying Pi harness. For another Claude-family model, use Astra; for another Codex/OpenAI-family model, use Opus. If the family is unknown, report the routing ambiguity rather than guessing.
+1. Identify the manager's actual model family from the current chat, not the underlying Pi harness. For another Claude-family model, use Astra. For Gemini or another Codex/OpenAI-family model, use Opus. If the family is unknown, report the routing ambiguity rather than guessing.
 2. Call `testy_list_models` and select the peer's exact `profileID`. This selects both model and provider. If several profiles offer that model, use the current provider when applicable; otherwise use an available authenticated profile. Never rely on an ambiguous model name or a `default` alias.
 3. Call `testy_create_thread` with that `profileID`, `reasoning: "xhigh"`, the current chat ID as `coordinatorID`, and the current `projectID`. Give it a clear review title and a compact brief with the artifact paths and revision. Use a fresh request UUID; reuse it only to recover the same create request after a lost response.
 4. Explicitly tell the peer: review only; do not edit, publish, expose secrets, invoke Aspera, or create more reviewers. Testy does not provide the CLI's read-only sandbox for this child; these are task constraints, not a permission boundary. Report any required access it lacks.
